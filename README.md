@@ -1,1 +1,0 @@
-# LEIS-DO-GRUPO
