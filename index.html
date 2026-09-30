@@ -58,8 +58,6 @@ footer{text-align:center;opacity:.6;margin-top:40px;font-size:15px}
 </header>
 <div class="bar">
 <input type="search" id="q" placeholder="Pesquisar leis por nome ou conteúdo…" aria-label="Pesquisar leis">
-<button id="dlAll">⬇ BAIXAR TODAS AS LEIS</button>
-<button class="ghost" id="dlFlag">⬇ BANDEIRA</button>
 </div>
 <div class="grid" id="grid"></div>
 <div class="empty" id="empty">Nenhuma lei encontrada.</div>
@@ -98,6 +96,15 @@ arts:[
 ["Art. 4º","O descumprimento do disposto nesta Lei sujeitará o infrator às seguintes sanções progressivas:",["**I** — Na primeira ocorrência, será aplicada **advertência formal**, acompanhada da remoção do conteúdo enviado;","**II** — Caso o infrator **continue praticando a conduta após a advertência**, ou volte a cometer a mesma infração, poderá ser aplicada **remoção temporária do grupo**, por períodos de 2 horas, 24 horas ou, dependendo da gravidade e da reincidência, até 1 semana;","**III** — Em caso de **reincidência contínua ou descumprimento das medidas anteriores**, poderá ser aplicado **banimento imediato** do grupo."]],
 ["Art. 5º","Esta Lei aplica-se igualmente a todos os integrantes do grupo, sem distinção de cargo, função ou representatividade."],
 ["Art. 6º","Esta Lei entra em vigor na data de sua publicação no grupo."]
+]},
+{id:"lei-02-cyberbullying",n:"LEI Nº 02",title:"Do Cyberbullying",
+intro:"",
+arts:[
+["Art. 4º","O descumprimento desta Lei sujeitará o infrator às seguintes medidas progressivas:",["**I** — Na primeira ocorrência, será aplicada **advertência formal**, podendo o conteúdo ser removido;","**II** — Em caso de reincidência, poderá ser aplicada **remoção temporária do grupo**, por períodos de 2 horas, 24 horas ou até 1 semana, conforme a gravidade da conduta;","**III** — Em caso de reincidência contínua, perseguição persistente ou conduta de maior gravidade, poderá ser aplicado **banimento do grupo**."]],
+["Art. 5º","Quando a prática de cyberbullying envolver ameaça, exposição grave, perseguição intensa ou ataque coordenado contra um integrante, a Administração poderá aplicar diretamente uma medida mais severa, independentemente das advertências previstas anteriormente."],
+["Art. 6º","Nenhum integrante poderá ser punido exclusivamente por apresentar opinião, crítica ou discordância, desde que sua manifestação não constitua prática de humilhação, intimidação, perseguição ou outra conduta proibida por esta Lei."],
+["Art. 7º","Esta Lei aplica-se igualmente a todos os integrantes do grupo, sem distinção de cargo, função, autoridade ou representatividade."],
+["Art. 8º","Esta Lei entra em vigor na data de sua publicação no grupo."]
 ]}
 ];
 const $=s=>document.querySelector(s);
@@ -105,12 +112,6 @@ const strip=s=>s.replace(/\*\*/g,"");
 const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
 const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 const rich=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
-function lawText(l){
-  let t=l.n+" — "+l.title.toUpperCase()+"\n\n";
-  if(l.intro)t+=l.intro+"\n\n";
-  l.arts.forEach(a=>{t+=a[0]+" — "+strip(a[1])+"\n";(a[2]||[]).forEach(i=>t+="  * "+strip(i)+"\n");t+="\n"});
-  return t;
-}
 function full(l){return norm(l.n+" "+l.title+" "+l.intro+" "+l.arts.map(a=>a[0]+a[1]+(a[2]||[]).join(" ")).join(" "))}
 LAWS.forEach(l=>l.hay=full(l));
 
@@ -138,7 +139,7 @@ function openLaw(l,q){
   const s=$("#sheet");
   s.innerHTML='<button class="close" aria-label="Fechar">×</button><div class="n" style="font-family:Cinzel,serif;color:var(--red);letter-spacing:.15em;font-size:13px">⚜ '+esc(l.n)+'</div><h2>'+esc(l.title)+'</h2>'+
   (l.intro?'<p class="intro">'+esc(l.intro)+'</p>':'')+
-  '<div class="tools"><input type="search" id="lq" placeholder="Pesquisar nesta lei…"><button id="dl">⬇ BAIXAR ESTA LEI</button></div><div class="msg" id="msg"></div><div id="body"></div>';
+  '<div class="tools"><input type="search" id="lq" placeholder="Pesquisar nesta lei…"></div><div class="msg" id="msg"></div><div id="body"></div>';
   $("#modal").classList.add("on");document.body.style.overflow="hidden";
   s.querySelector(".close").onclick=closeLaw;
   const inp=$("#lq");inp.value=q||"";
@@ -153,25 +154,11 @@ function openLaw(l,q){
     $("#msg").textContent=nv?shown+" artigo(s) encontrado(s)":"";
   };
   inp.oninput=draw;draw();
-  $("#dl").onclick=()=>save(l.id+".txt",lawText(l));
 }
 function closeLaw(){$("#modal").classList.remove("on");document.body.style.overflow=""}
 $("#modal").onclick=e=>{if(e.target.id==="modal")closeLaw()};
 document.onkeydown=e=>{if(e.key==="Escape")closeLaw()};
 
-async function save(filename,data){
-  try{
-    const d=await claude.use("downloads");
-    if(!d){alert("Download indisponível neste modo de visualização.");return}
-    await d.save({filename,data});
-  }catch(e){if(!e||e.code!=="declined")console.error(e)}
-}
-$("#dlAll").onclick=()=>save("leis-do-grupo.txt","LEIS DO GRUPO\n\n"+LAWS.map(lawText).join("\n————————————————\n\n"));
-$("#dlFlag").onclick=()=>{
-  const b=atob(document.querySelector(".flag").src.split(",")[1]),u=new Uint8Array(b.length);
-  for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
-  save("bandeira-do-grupo.jpg",u);
-};
 render();
 </script>
 </body>
